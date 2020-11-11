@@ -85,7 +85,7 @@ public class WGraph_DS implements weighted_graph{
 
     @Override
     public int edgeSize() {
-        return edgeSize;
+        return edgeCounter;
     }
 
     @Override
