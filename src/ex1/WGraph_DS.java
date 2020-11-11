@@ -3,6 +3,7 @@ package ex1;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 public class WGraph_DS implements weighted_graph{
     int keyGenerator;
@@ -57,13 +58,14 @@ public class WGraph_DS implements weighted_graph{
     @Override
     public Collection getV(int vKey) {
         Collection<Integer> NiKeys = Ni.get(vKey).keySet();
-        node_info[] nodeNi = new node_info[NiKeys.size()];
+        Collection<node_info> nodeNi = new LinkedList<>();
+//        node_info[] nodeNi = new node_info[NiKeys.size()];
         Iterator<Integer> it = NiKeys.iterator();
 
         for (int i = 0; i < NiKeys.size(); i++) {
-            nodeNi[i] = this.getNode(it.next());
+            nodeNi.add(this.getNode(it.next()));
         }
-        return (Collection) nodeNi;
+        return  nodeNi;
     }
 
     @Override
