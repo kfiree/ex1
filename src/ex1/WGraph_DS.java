@@ -57,9 +57,9 @@ public class WGraph_DS implements weighted_graph{
 
     @Override
     public Collection getV(int vKey) {
-        Collection<Integer> NiKeys = Ni.get(vKey).keySet();
         Collection<node_info> nodeNi = new LinkedList<>();
-//        node_info[] nodeNi = new node_info[NiKeys.size()];
+
+        Collection<Integer> NiKeys = Ni.get(vKey).keySet();
         Iterator<Integer> it = NiKeys.iterator();
 
         for (int i = 0; i < NiKeys.size(); i++) {
@@ -70,7 +70,11 @@ public class WGraph_DS implements weighted_graph{
 
     @Override
     public node_info removeNode(int key) {
-        return null;
+        for(int NiKey : Ni.get(key).keySet()){
+            Ni.get(NiKey).remove(key);
+        }
+
+        return nodes.remove(key);
     }
 
     @Override
