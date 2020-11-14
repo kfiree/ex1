@@ -4,19 +4,22 @@ import java.util.List;
 
 public class graph_algo implements weighted_graph_algorithms {
 
+    private weighted_graph graph = new WGraph_DS();
+
     @Override
     public void init(weighted_graph g) {
-
+        this.graph = g;
     }
 
     @Override
     public weighted_graph getGraph() {
-        return null;
+        return this.graph;
     }
 
     @Override
     public weighted_graph copy() {
-        return null;
+        weighted_graph newGraph = new WGraph_DS(this.graph);
+        return newGraph;
     }
 
     @Override

@@ -9,11 +9,42 @@ public class WGraph_DS implements weighted_graph{
     int keyGenerator;
     int nodeSize = 0;
     int edgeCounter = 0;
-    int Mcoun = 0;
+    int modeCounter = 0;
 
     //MAYBE add object edge
     HashMap<Integer, HashMap<Integer, Double>> Ni = new HashMap<>();
     HashMap<Integer, node_info> nodes = new HashMap<>();
+
+    //copy constructor
+    public WGraph_DS(weighted_graph originalGraph) {
+
+        this.modeCounter = originalGraph.getMC();
+        this.edgeCounter = originalGraph.edgeSize();
+
+        //set graph's nodes
+        Collection<node_info> nodes = originalGraph.getV();
+        if(nodes != null) {
+            for(node_info node : nodes){
+                addNode(node.getKey());
+            }
+
+        }
+
+        //loop over nodes and add
+        for(int key : originalGraph.Ni.keySet()) {
+
+        }
+//            HashMap<Integer, Double> newNei = new HashMap<>();
+//            this.Ni.put(key, newNei);
+//            for (int Nikey : originalGraph){
+//                node.addNi(this.getNode(oldNi.getKey()));
+//            }
+//        }
+    }
+
+    public WGraph_DS() {
+
+    }
 
     @Override
     public node_info getNode(int key) {
@@ -36,7 +67,7 @@ public class WGraph_DS implements weighted_graph{
         node_info newNode = new NodeInfo();
         nodes.put(key, newNode);
         HashMap<Integer,Double> newNi= new HashMap<>();
-        Ni.put(key, newNi);//matti
+        Ni.put(key, newNi);
     }
 
     @Override
@@ -78,8 +109,9 @@ public class WGraph_DS implements weighted_graph{
     }
 
     @Override
-    public void removeEdge(int node1, int node2) {
-
+    public void removeEdge(int key1, int key2) {
+        Ni.get(key1).remove(key2);
+        Ni.get(key2).remove(key1);
     }
 
     @Override
@@ -94,7 +126,7 @@ public class WGraph_DS implements weighted_graph{
 
     @Override
     public int getMC() {
-        return Mcoun;
+        return modeCounter;
     }
 
     class NodeInfo implements node_info{
@@ -102,10 +134,14 @@ public class WGraph_DS implements weighted_graph{
         int key;
         double tag;
         String info="";
-        HashMap<Integer, Double> Ni = new HashMap<>();
+        //HashMap<Integer, Double> Ni = new HashMap<>();
+
+        public NodeInfo(node_info node) {
+            this.key = keyGenerator;
+        }
 
         public NodeInfo() {
-            this.key = keyGenerator;
+
         }
 
         @Override
