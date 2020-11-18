@@ -1,47 +1,49 @@
 package ex1;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class WGraph_DS implements weighted_graph{
-    int keyGenerator;
-    int nodeSize = 0;
+public class WGraph_DS implements weighted_graph, Serializable {
     int edgeCounter = 0;
     int modeCounter = 0;
 
-    //MAYBE add object edge
+    //TODO check inner hashmap for nulls everywhere
+    //TODO MAYBE add object edge
     HashMap<Integer, HashMap<Integer, Double>> Ni = new HashMap<>();
     HashMap<Integer, node_info> nodes = new HashMap<>();
 
     //copy constructor
-    public WGraph_DS(weighted_graph originalGraph) {
+    public WGraph_DS(weighted_graph oGraph) {
+        //TODO fix counters
 
-        this.modeCounter = originalGraph.getMC();
-        this.edgeCounter = originalGraph.edgeSize();
 
         //set graph's nodes
-        Collection<node_info> nodes = originalGraph.getV();
-        if(nodes != null) {
-            for(node_info node : nodes){
+        Collection<node_info> oNodes = oGraph.getV();
+        if (oNodes != null) {
+            for (node_info node : oNodes) {
                 addNode(node.getKey());
             }
 
         }
+        for (int key1 : Ni.keySet()) {
 
-        //loop over nodes and add
-        for(int key : originalGraph.Ni.keySet()) {
+            Collection<node_info> nodesNei = oGraph.getV(key1);
+            Iterator<node_info> iterator = nodesNei.iterator();
+            while (iterator.hasNext()) {
+                int key2 = iterator.next().getKey();
+                connect(key1, key2, oGraph.getEdge(key1, key2));
+            }
 
+            this.modeCounter = oGraph.getMC();
+            this.edgeCounter = oGraph.edgeSize();
+            //TODO check if iterator better
         }
-//            HashMap<Integer, Double> newNei = new HashMap<>();
-//            this.Ni.put(key, newNei);
-//            for (int Nikey : originalGraph){
-//                node.addNi(this.getNode(oldNi.getKey()));
-//            }
-//        }
     }
 
+    //empty constructor
     public WGraph_DS() {
 
     }
@@ -53,32 +55,67 @@ public class WGraph_DS implements weighted_graph{
 
     @Override
     public boolean hasEdge(int key1, int key2) {
+        //is key1 existed
+        if (Ni.get(key1) == null)
+            return false;
+
+        //is ke2 in key1's neighbors
         return Ni.get(key1).containsKey(key2);
     }
 
     @Override
     public double getEdge(int key1, int key2) {
+        if(this.nodeSize()==0)
+            return -1;
+
+        if(key1==key2)
+            return 0;
+
+        if (Ni.get(key1) == null || Ni.get(key1).get(key2) == null)
+            return -1;
+
         return Ni.get(key1).get(key2);
     }
 
     @Override
     public void addNode(int key) {
-        this.keyGenerator = key;
-        node_info newNode = new NodeInfo();
+        if(this.nodes.containsKey(key))
+            return;
+
+        node_info newNode = new NodeInfo(key);
         nodes.put(key, newNode);
-        HashMap<Integer,Double> newNi= new HashMap<>();
+        HashMap<Integer, Double> newNi = new HashMap<>();
         Ni.put(key, newNi);
+
+        modeCounter++;
+
     }
 
     @Override
-    public void connect(int key1, int key2, double w) {
-        //MAYBE check if nodes in node
-        if(nodes.containsKey(key1) && nodes.containsKey(key2)){
-            Ni.get(key1).put(key2, w);
-            Ni.get(key2).put(key1, w);
 
-            edgeCounter++;
+    public void connect(int key1, int key2, double w) {
+
+        //MAYBE check if nodes in node ---- is just check if hasEdge before counter is enough
+        if (key1 == key2 || !nodes.containsKey(key1) || !nodes.containsKey(key2) || w<0 || this.getEdge(key1,key2)==w) {
+            return;
         }
+
+        // if edge exist remove and reconnect in order to update weight
+        // else update edgeCounter
+        if (this.hasEdge(key1, key2)) {
+            this.removeEdge(key1, key2);
+        }else{
+            modeCounter++;
+        }
+
+        //update counters
+        edgeCounter++;
+
+
+        //create edge
+        Ni.get(key1).put(key2, w);
+        Ni.get(key2).put(key1, w);
+
     }
 
     @Override
@@ -90,33 +127,53 @@ public class WGraph_DS implements weighted_graph{
     public Collection getV(int vKey) {
         Collection<node_info> nodeNi = new LinkedList<>();
 
-        Collection<Integer> NiKeys = Ni.get(vKey).keySet();
-        Iterator<Integer> it = NiKeys.iterator();
+        if(Ni.get(vKey)!=null) {
+            Collection<Integer> NiKeys = Ni.get(vKey).keySet();
+            Iterator<Integer> it = NiKeys.iterator();
 
-        for (int i = 0; i < NiKeys.size(); i++) {
-            nodeNi.add(this.getNode(it.next()));
+            for (int i = 0; i < NiKeys.size(); i++) {
+                nodeNi.add(this.getNode(it.next()));
+            }
         }
-        return  nodeNi;
+        return nodeNi;
     }
 
     @Override
     public node_info removeNode(int key) {
-        for(int NiKey : Ni.get(key).keySet()){
-            Ni.get(NiKey).remove(key);
+        //TODO test null(check if key not in graph insted of ni.get != null?)
+        if (Ni.get(key) != null) {
+
+            //remove node's edges
+            for (int NiKey : Ni.get(key).keySet()) {
+                Ni.get(NiKey).remove(key);
+                edgeCounter--;
+            }
+
+            // remove
+            modeCounter++;
+            Ni.remove(key);
+            return nodes.remove(key);
         }
 
-        return nodes.remove(key);
+        return null;
     }
 
     @Override
     public void removeEdge(int key1, int key2) {
-        Ni.get(key1).remove(key2);
-        Ni.get(key2).remove(key1);
+        if (Ni.containsKey(key1) && Ni.containsKey(key2) && hasEdge(key1, key2)) {
+            //remove edge
+            Ni.get(key1).remove(key2);
+            Ni.get(key2).remove(key1);
+
+            //update counters
+            edgeCounter--;
+            modeCounter++;
+        }
     }
 
     @Override
     public int nodeSize() {
-        return nodeSize;
+        return nodes.size();
     }
 
     @Override
@@ -124,24 +181,52 @@ public class WGraph_DS implements weighted_graph{
         return edgeCounter;
     }
 
+
     @Override
     public int getMC() {
         return modeCounter;
     }
 
-    class NodeInfo implements node_info{
+    public boolean equals(Object otherObj) {
+
+        //check if same graph
+        if(otherObj==this)
+            return true;
+
+        //check if same type
+        if (!(otherObj instanceof weighted_graph)) {
+            return false;
+        }
+
+        //casting
+        weighted_graph other = (WGraph_DS) otherObj;
+
+        //check if counters equals
+        if (this.getMC() != other.getMC() || this.nodeSize() != other.nodeSize() || this.edgeSize() != other.edgeSize())
+            return false;
+
+        //compare all graph nodes and edges
+        for (int nodeKey : this.Ni.keySet()) {
+            //check nodes data
+            if(this.getNode(nodeKey).getInfo()!=other.getNode(nodeKey).getInfo() && this.getNode(nodeKey).getTag()!=other.getNode(nodeKey).getTag())
+                return false;
+            //check edges
+            for (int neiKey : this.Ni.get(nodeKey).keySet())
+                if (!other.hasEdge(neiKey, nodeKey) && this.getEdge(neiKey, nodeKey) != other.getEdge(neiKey, nodeKey))
+                    return false;
+        }
+
+        return true;
+    }
+
+    class NodeInfo implements node_info, Comparable<node_info>, Serializable {
 
         int key;
         double tag;
-        String info="";
-        //HashMap<Integer, Double> Ni = new HashMap<>();
+        String info = "";
 
-        public NodeInfo(node_info node) {
-            this.key = keyGenerator;
-        }
-
-        public NodeInfo() {
-
+        public NodeInfo(int newKey) {
+            this.key = newKey;
         }
 
         @Override
@@ -167,6 +252,19 @@ public class WGraph_DS implements weighted_graph{
         @Override
         public void setTag(double t) {
             this.tag = t;
+        }
+
+        @Override
+        public int compareTo(node_info node) {
+
+            double key1 = this.getTag();
+            double key2 = node.getTag();
+            if (key1 == key2)
+                return 0;
+            else if (key1 > key2)
+                return 1;
+            else
+                return -1;
         }
     }
 }

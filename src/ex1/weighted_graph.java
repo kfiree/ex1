@@ -14,7 +14,8 @@ public interface weighted_graph {
      * @param key - the node_id
      * @return the node_data by the node_id, null if none.
      */
-    public node_info getNode(int key);
+    public
+    node_info getNode(int key);
     /**
      * return true iff (if and only if) there is an edge between node1 and node2
      * Note: this method should run in O(1) time.
