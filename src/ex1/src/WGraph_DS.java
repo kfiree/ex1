@@ -1,4 +1,4 @@
-package ex1;
+package ex1.src;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -10,15 +10,11 @@ public class WGraph_DS implements weighted_graph, Serializable {
     int edgeCounter = 0;
     int modeCounter = 0;
 
-    //TODO check inner hashmap for nulls everywhere
-    //TODO MAYBE add object edge
     HashMap<Integer, HashMap<Integer, Double>> Ni = new HashMap<>();
     HashMap<Integer, node_info> nodes = new HashMap<>();
 
     //copy constructor
     public WGraph_DS(weighted_graph oGraph) {
-        //TODO fix counters
-
 
         //set graph's nodes
         Collection<node_info> oNodes = oGraph.getV();
@@ -26,7 +22,6 @@ public class WGraph_DS implements weighted_graph, Serializable {
             for (node_info node : oNodes) {
                 addNode(node.getKey());
             }
-
         }
         for (int key1 : Ni.keySet()) {
 
@@ -39,7 +34,6 @@ public class WGraph_DS implements weighted_graph, Serializable {
 
             this.modeCounter = oGraph.getMC();
             this.edgeCounter = oGraph.edgeSize();
-            //TODO check if iterator better
         }
     }
 
@@ -48,11 +42,23 @@ public class WGraph_DS implements weighted_graph, Serializable {
 
     }
 
+    /**
+     * return the node_data by the key,
+     * @param key - the node unique key
+     * @return the node_data by the node_id, null if none.
+     */
     @Override
     public node_info getNode(int key) {
         return nodes.get(key);
     }
 
+    /**
+     * return true iff (if and only if) there is an edge between node1 and node2
+     * this method runs in O(1) time.
+     * @param key1  node1's key
+     * @param key2  node2's key
+     * @return does node 1 and node 2 has an edge between them
+     */
     @Override
     public boolean hasEdge(int key1, int key2) {
         //is key1 existed
@@ -62,7 +68,14 @@ public class WGraph_DS implements weighted_graph, Serializable {
         //is ke2 in key1's neighbors
         return Ni.get(key1).containsKey(key2);
     }
-
+    /**
+     * return the weight if the edge (node1, node1). In case
+     * there is no such edge - should return -1
+     * Note: this method should run in O(1) time.
+     * @param key1 node1's key
+     * @param key1 node2's key
+     * @return
+     */
     @Override
     public double getEdge(int key1, int key2) {
         if(this.nodeSize()==0)
@@ -77,6 +90,12 @@ public class WGraph_DS implements weighted_graph, Serializable {
         return Ni.get(key1).get(key2);
     }
 
+    /**
+     * add a new node to the graph with the given key.
+     * Note: this method runs in O(1) time.
+     if there is already a node with such a key -> no action should be performed.
+     * @param key
+     */
     @Override
     public void addNode(int key) {
         if(this.nodes.containsKey(key))
@@ -91,8 +110,12 @@ public class WGraph_DS implements weighted_graph, Serializable {
 
     }
 
+    /**
+     * Connect an edge between node1 and node2, with an edge with weight >=0.
+     * Note: this method should run in O(1) time.
+     * Note2: if the edge node1-node2 already exists - the method simply updates the weight of the edge.
+     */
     @Override
-
     public void connect(int key1, int key2, double w) {
 
         //MAYBE check if nodes in node ---- is just check if hasEdge before counter is enough
@@ -108,9 +131,7 @@ public class WGraph_DS implements weighted_graph, Serializable {
             modeCounter++;
         }
 
-        //update counters
         edgeCounter++;
-
 
         //create edge
         Ni.get(key1).put(key2, w);
@@ -118,11 +139,24 @@ public class WGraph_DS implements weighted_graph, Serializable {
 
     }
 
+    /**
+     * This method return a pointer (shallow copy) for a
+     * Collection representing all the nodes in the graph.
+     * Note: this method runs in O(1) time
+     * @return Collection<node_data> collection representations of graph's nodes
+     */
     @Override
     public Collection<node_info> getV() {
         return nodes.values();
     }
 
+    /**
+     *
+     * This method returns a Collection containing all the
+     * neighbors of the node with the key
+     * Note: this method runs in O(k) time, k - being the degree of node_id.
+     * @return Collection<node_data> collection representations of node's neighbors
+     */
     @Override
     public Collection getV(int vKey) {
         Collection<node_info> nodeNi = new LinkedList<>();
@@ -138,9 +172,16 @@ public class WGraph_DS implements weighted_graph, Serializable {
         return nodeNi;
     }
 
+    /**
+     * Delete the node (with the given ID) from the graph -
+     * and removes all edges which starts or ends at this node.
+     * This method should run in O(n), |V|=n, as all the edges should be removed.
+     * @return the removed node
+     * @param key the removed node's key
+     */
     @Override
     public node_info removeNode(int key) {
-        //TODO test null(check if key not in graph insted of ni.get != null?)
+
         if (Ni.get(key) != null) {
 
             //remove node's edges
@@ -158,6 +199,12 @@ public class WGraph_DS implements weighted_graph, Serializable {
         return null;
     }
 
+    /**
+     * Delete the edge between node1 and node2 from the graph,
+     * Note: this method runs in O(1) time.
+     * @param key1
+     * @param key2
+     */
     @Override
     public void removeEdge(int key1, int key2) {
         if (Ni.containsKey(key1) && Ni.containsKey(key2) && hasEdge(key1, key2)) {
@@ -171,22 +218,41 @@ public class WGraph_DS implements weighted_graph, Serializable {
         }
     }
 
+    /** return the number of vertices (nodes) in the graph.
+     * Note: this method runs in O(1) time.
+     * @return graph size
+     */
     @Override
     public int nodeSize() {
         return nodes.size();
     }
 
+    /**
+     * return the number of edges (undirectional graph).
+     * Note: this method runs in O(1) time.
+     * @return edges number
+     */
     @Override
     public int edgeSize() {
         return edgeCounter;
     }
 
-
+    /**
+     * return the Mode Count - for testing changes in the graph.
+     * Any change in the inner state of the graph should cause an increment in the ModeCount
+     * @return number of changes on the graph
+     */
     @Override
     public int getMC() {
         return modeCounter;
     }
 
+    /**
+     * override the java equals method.
+     * compare 2 graph's data
+     * @param otherObj
+     * @return is this (graph) and other obj (graph) have the same data
+     */
     public boolean equals(Object otherObj) {
 
         //check if same graph
@@ -225,35 +291,67 @@ public class WGraph_DS implements weighted_graph, Serializable {
         double tag;
         String info = "";
 
+        /**
+         * constructor that create node with the given key
+         * @param newKey new node's key
+         */
         public NodeInfo(int newKey) {
             this.key = newKey;
         }
-
+        /**
+         * Return the key unique(id) associated with this node.
+         * @return node's key
+         */
         @Override
         public int getKey() {
             return this.key;
         }
 
+        /**
+         * return the remark (meta data) associated with this node.
+         * @return node's info
+         */
         @Override
         public String getInfo() {
             return this.info;
         }
 
+        /**
+         * Allows changing the remark (meta data) associated with this node.
+         * used in shortestPath method to save previous node's key in path
+         * @param s new node's info
+         */
         @Override
         public void setInfo(String s) {
             this.info = s;
         }
 
+        /**
+         * get tag that holds Temporal data
+         * used in shortestPath method to hold the distance between node to the source
+         * @return
+         */
         @Override
         public double getTag() {
             return this.tag;
         }
 
+        /**
+         * set node's tag
+         * used in shortestPath method to hold the distance between node to the source
+         * @param t - the new value of the tag
+         */
         @Override
         public void setTag(double t) {
             this.tag = t;
         }
 
+        /**
+         * override the compareTo method
+         *
+         * @param node
+         * @return 1 if this.tag>node.tag, 0 if equals and -1 if this.tag<node.tag
+         */
         @Override
         public int compareTo(node_info node) {
 
